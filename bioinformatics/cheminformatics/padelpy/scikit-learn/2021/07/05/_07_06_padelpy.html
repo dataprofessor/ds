@@ -1,0 +1,2835 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Calculating molecular fingerprints using padelpy | Data Professor</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Calculating molecular fingerprints using padelpy" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A tutorial showing how to use padelpy for calculating molecular fingerprints and its subsequent use for machine learning model building." />
+<meta property="og:description" content="A tutorial showing how to use padelpy for calculating molecular fingerprints and its subsequent use for machine learning model building." />
+<link rel="canonical" href="https://dataprofessor.github.io/ds/bioinformatics/cheminformatics/padelpy/scikit-learn/2021/07/05/_07_06_padelpy.html" />
+<meta property="og:url" content="https://dataprofessor.github.io/ds/bioinformatics/cheminformatics/padelpy/scikit-learn/2021/07/05/_07_06_padelpy.html" />
+<meta property="og:site_name" content="Data Professor" />
+<meta property="og:image" content="https://dataprofessor.github.io/ds/images/padelpy.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-07-05T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"A tutorial showing how to use padelpy for calculating molecular fingerprints and its subsequent use for machine learning model building.","url":"https://dataprofessor.github.io/ds/bioinformatics/cheminformatics/padelpy/scikit-learn/2021/07/05/_07_06_padelpy.html","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://dataprofessor.github.io/ds/bioinformatics/cheminformatics/padelpy/scikit-learn/2021/07/05/_07_06_padelpy.html"},"headline":"Calculating molecular fingerprints using padelpy","dateModified":"2021-07-05T00:00:00-05:00","datePublished":"2021-07-05T00:00:00-05:00","image":"https://dataprofessor.github.io/ds/images/padelpy.png","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/ds/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://dataprofessor.github.io/ds/feed.xml" title="Data Professor" /><link rel="shortcut icon" type="image/x-icon" href="/ds/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/ds/">Data Professor</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/ds/about/">About Me</a><a class="page-link" href="/ds/search/">Search</a><a class="page-link" href="/ds/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Calculating molecular fingerprints using padelpy</h1><p class="page-description">A tutorial showing how to use padelpy for calculating molecular fingerprints and its subsequent use for machine learning model building.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-07-05T00:00:00-05:00" itemprop="datePublished">
+        Jul 5, 2021
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      11 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/ds/categories/#bioinformatics">bioinformatics</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/ds/categories/#cheminformatics">cheminformatics</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/ds/categories/#padelpy">padelpy</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/ds/categories/#scikit-learn">scikit-learn</a>
+        
+      
+      </p>
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-wrap flex-justify-end">
+          <div class="px-2">
+
+    <a href="https://github.com/dataprofessor/ds/tree/master/_notebooks/2021_07_06_padelpy.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/ds/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://mybinder.org/v2/gh/dataprofessor/ds/master?filepath=_notebooks%2F2021_07_06_padelpy.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/ds/assets/badges/binder.svg" alt="Open In Binder"/>
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/dataprofessor/ds/blob/master/_notebooks/2021_07_06_padelpy.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/ds/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h1"><a href="#Install-padelpy">Install padelpy </a></li>
+<li class="toc-entry toc-h1"><a href="#Prepare-fingerprint-XML">Prepare fingerprint XML </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#Download-fingerprint-XML-files">Download fingerprint XML files </a></li>
+<li class="toc-entry toc-h3"><a href="#List-and-sort-fingerprint-XML-files">List and sort fingerprint XML files </a></li>
+<li class="toc-entry toc-h3"><a href="#Create-a-dictionary">Create a dictionary </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h1"><a href="#Load-HCV-dataset">Load HCV dataset </a></li>
+<li class="toc-entry toc-h1"><a href="#Prepare-data-subset-as-input-to-PaDEL">Prepare data subset as input to PaDEL </a></li>
+<li class="toc-entry toc-h1"><a href="#Calculate-descriptors">Calculate descriptors </a></li>
+<li class="toc-entry toc-h1"><a href="#Display-calculated-fingerprints">Display calculated fingerprints </a></li>
+<li class="toc-entry toc-h1"><a href="#Build-a-Random-Forest-Model">Build a Random Forest Model </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#Remove-low-variance-features">Remove low variance features </a></li>
+<li class="toc-entry toc-h3"><a href="#Data-splitting">Data splitting </a></li>
+<li class="toc-entry toc-h3"><a href="#Model-building">Model building </a></li>
+<li class="toc-entry toc-h3"><a href="#Apply-model-to-make-prediction">Apply model to make prediction </a></li>
+<li class="toc-entry toc-h3"><a href="#Calculate-model-performance-metrics">Calculate model performance metrics </a></li>
+<li class="toc-entry toc-h3"><a href="#Cross-validation">Cross-validation </a></li>
+</ul>
+</li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2021_07_06_padelpy.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>
+</p>
+<center>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/rEmDyZHz5U8" frameborder="0" allowfullscreen=""></iframe>
+</center>
+
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>
+</p>
+<center>
+    <div class="jekyll-twitter-plugin">
+<blockquote class="twitter-tweet">
+<p lang="en" dir="ltr">Hi friends, I've just released a new YouTube video: How to build <a href="https://twitter.com/hashtag/machinelearning?src=hash&amp;ref_src=twsrc%5Etfw">#machinelearning</a> models for <a href="https://twitter.com/hashtag/drugdiscovery?src=hash&amp;ref_src=twsrc%5Etfw">#drugdiscovery</a> using <a href="https://twitter.com/hashtag/PaDELPy?src=hash&amp;ref_src=twsrc%5Etfw">#PaDELPy</a><a href="https://t.co/zGMcvaDdk1">https://t.co/zGMcvaDdk1</a><a href="https://twitter.com/hashtag/66daysofdata?src=hash&amp;ref_src=twsrc%5Etfw">#66daysofdata</a> <a href="https://twitter.com/hashtag/100daysofcode?src=hash&amp;ref_src=twsrc%5Etfw">#100daysofcode</a> <a href="https://twitter.com/hashtag/bioinformatics?src=hash&amp;ref_src=twsrc%5Etfw">#bioinformatics</a> <a href="https://twitter.com/hashtag/cheminformatics?src=hash&amp;ref_src=twsrc%5Etfw">#cheminformatics</a> <a href="https://twitter.com/hashtag/qsar?src=hash&amp;ref_src=twsrc%5Etfw">#qsar</a> <a href="https://twitter.com/hashtag/qspr?src=hash&amp;ref_src=twsrc%5Etfw">#qspr</a> <a href="https://twitter.com/hashtag/python?src=hash&amp;ref_src=twsrc%5Etfw">#python</a> <a href="https://t.co/B7vDy1eFfz">pic.twitter.com/B7vDy1eFfz</a></p>— Data Professor (@thedataprof) <a href="https://twitter.com/thedataprof/status/1412000936357089280?ref_src=twsrc%5Etfw">July 5, 2021</a>
+</blockquote>
+<script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</div>
+</center>
+
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Install-padelpy">
+<a class="anchor" href="#Install-padelpy" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Install padelpy</strong><a class="anchor-link" href="#Install-padelpy"> </a>
+</h1>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="err">!</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">padelpy</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Collecting padelpy
+  Downloading https://files.pythonhosted.org/packages/4d/40/57cd08bdbb1e6f2a7f25f7495fe3b4009ee453b401fe1ba457df92bf78c6/padelpy-0.1.9-py2.py3-none-any.whl (20.9MB)
+     |████████████████████████████████| 20.9MB 1.4MB/s 
+Installing collected packages: padelpy
+Successfully installed padelpy-0.1.9
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Prepare-fingerprint-XML">
+<a class="anchor" href="#Prepare-fingerprint-XML" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Prepare fingerprint XML</strong><a class="anchor-link" href="#Prepare-fingerprint-XML"> </a>
+</h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Download-fingerprint-XML-files">
+<a class="anchor" href="#Download-fingerprint-XML-files" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Download fingerprint XML files</strong><a class="anchor-link" href="#Download-fingerprint-XML-files"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="err">!</span> <span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">dataprofessor</span><span class="o">/</span><span class="n">padel</span><span class="o">/</span><span class="n">raw</span><span class="o">/</span><span class="n">main</span><span class="o">/</span><span class="n">fingerprints_xml</span><span class="o">.</span><span class="n">zip</span>
+<span class="err">!</span> <span class="n">unzip</span> <span class="n">fingerprints_xml</span><span class="o">.</span><span class="n">zip</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>--2021-07-04 15:38:39--  https://github.com/dataprofessor/padel/raw/main/fingerprints_xml.zip
+Resolving github.com (github.com)... 140.82.113.4
+Connecting to github.com (github.com)|140.82.113.4|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://raw.githubusercontent.com/dataprofessor/padel/main/fingerprints_xml.zip [following]
+--2021-07-04 15:38:39--  https://raw.githubusercontent.com/dataprofessor/padel/main/fingerprints_xml.zip
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.108.133, 185.199.110.133, 185.199.109.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.108.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 10871 (11K) [application/zip]
+Saving to: ‘fingerprints_xml.zip’
+
+fingerprints_xml.zi 100%[===================&gt;]  10.62K  --.-KB/s    in 0s      
+
+2021-07-04 15:38:39 (105 MB/s) - ‘fingerprints_xml.zip’ saved [10871/10871]
+
+Archive:  fingerprints_xml.zip
+  inflating: AtomPairs2DFingerprintCount.xml  
+  inflating: AtomPairs2DFingerprinter.xml  
+  inflating: EStateFingerprinter.xml  
+  inflating: ExtendedFingerprinter.xml  
+  inflating: Fingerprinter.xml       
+  inflating: GraphOnlyFingerprinter.xml  
+  inflating: KlekotaRothFingerprintCount.xml  
+  inflating: KlekotaRothFingerprinter.xml  
+  inflating: MACCSFingerprinter.xml  
+  inflating: PubchemFingerprinter.xml  
+  inflating: SubstructureFingerprintCount.xml  
+  inflating: SubstructureFingerprinter.xml  
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="List-and-sort-fingerprint-XML-files">
+<a class="anchor" href="#List-and-sort-fingerprint-XML-files" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>List and sort fingerprint XML files</strong><a class="anchor-link" href="#List-and-sort-fingerprint-XML-files"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span>
+<span class="n">xml_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*.xml"</span><span class="p">)</span>
+<span class="n">xml_files</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+<span class="n">xml_files</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>['AtomPairs2DFingerprintCount.xml',
+ 'AtomPairs2DFingerprinter.xml',
+ 'EStateFingerprinter.xml',
+ 'ExtendedFingerprinter.xml',
+ 'Fingerprinter.xml',
+ 'GraphOnlyFingerprinter.xml',
+ 'KlekotaRothFingerprintCount.xml',
+ 'KlekotaRothFingerprinter.xml',
+ 'MACCSFingerprinter.xml',
+ 'PubchemFingerprinter.xml',
+ 'SubstructureFingerprintCount.xml',
+ 'SubstructureFingerprinter.xml']</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">FP_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'AtomPairs2DCount'</span><span class="p">,</span>
+ <span class="s1">'AtomPairs2D'</span><span class="p">,</span>
+ <span class="s1">'EState'</span><span class="p">,</span>
+ <span class="s1">'CDKextended'</span><span class="p">,</span>
+ <span class="s1">'CDK'</span><span class="p">,</span>
+ <span class="s1">'CDKgraphonly'</span><span class="p">,</span>
+ <span class="s1">'KlekotaRothCount'</span><span class="p">,</span>
+ <span class="s1">'KlekotaRoth'</span><span class="p">,</span>
+ <span class="s1">'MACCS'</span><span class="p">,</span>
+ <span class="s1">'PubChem'</span><span class="p">,</span>
+ <span class="s1">'SubstructureCount'</span><span class="p">,</span>
+ <span class="s1">'Substructure'</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Create-a-dictionary">
+<a class="anchor" href="#Create-a-dictionary" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Create a dictionary</strong><a class="anchor-link" href="#Create-a-dictionary"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">fp</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">FP_list</span><span class="p">,</span> <span class="n">xml_files</span><span class="p">))</span>
+<span class="n">fp</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'AtomPairs2D': 'AtomPairs2DFingerprinter.xml',
+ 'AtomPairs2DCount': 'AtomPairs2DFingerprintCount.xml',
+ 'CDK': 'Fingerprinter.xml',
+ 'CDKextended': 'ExtendedFingerprinter.xml',
+ 'CDKgraphonly': 'GraphOnlyFingerprinter.xml',
+ 'EState': 'EStateFingerprinter.xml',
+ 'KlekotaRoth': 'KlekotaRothFingerprinter.xml',
+ 'KlekotaRothCount': 'KlekotaRothFingerprintCount.xml',
+ 'MACCS': 'MACCSFingerprinter.xml',
+ 'PubChem': 'PubchemFingerprinter.xml',
+ 'Substructure': 'SubstructureFingerprinter.xml',
+ 'SubstructureCount': 'SubstructureFingerprintCount.xml'}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">fp</span><span class="p">[</span><span class="s1">'AtomPairs2D'</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>'AtomPairs2DFingerprinter.xml'</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Load-HCV-dataset">
+<a class="anchor" href="#Load-HCV-dataset" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Load HCV dataset</strong><a class="anchor-link" href="#Load-HCV-dataset"> </a>
+</h1>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">'https://raw.githubusercontent.com/dataprofessor/data/master/HCV_NS5B_Curated.csv'</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CMPD_CHEMBLID</th>
+      <th>CANONICAL_SMILES</th>
+      <th>STANDARD_TYPE</th>
+      <th>RELATION</th>
+      <th>STANDARD_VALUE</th>
+      <th>STANDARD_UNITS</th>
+      <th>pIC50</th>
+      <th>PROTEIN_ACCESSION</th>
+      <th>PREF_NAME</th>
+      <th>DOC_CHEMBLID</th>
+      <th>ASSAY_SRC_DESCRIPTION</th>
+      <th>DESCRIPTION</th>
+      <th>PUBMED_ID</th>
+      <th>JOURNAL</th>
+      <th>YEAR</th>
+      <th>VOLUME</th>
+      <th>ISSUE</th>
+      <th>FIRST_PAGE</th>
+      <th>MOLWEIGHT</th>
+      <th>ALOGP</th>
+      <th>PSA</th>
+      <th>NUM_RO5_VIOLATIONS</th>
+      <th>Activity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>CHEMBL179256</td>
+      <td>OC(=O)c1ccc2c(c1)nc(c3ccc(O)cc3F)n2C4CCCCC4</td>
+      <td>IC50</td>
+      <td>=</td>
+      <td>1.4</td>
+      <td>nM</td>
+      <td>8.853872</td>
+      <td>Q8JXU8</td>
+      <td>Hepatitis C virus NS5B RNA-dependent RNA polym...</td>
+      <td>CHEMBL1142688</td>
+      <td>Scientific Literature</td>
+      <td>Inhibitory concentration against RNA dependent...</td>
+      <td>15743173.0</td>
+      <td>J. Med. Chem.</td>
+      <td>2005</td>
+      <td>48.0</td>
+      <td>5.0</td>
+      <td>1314.0</td>
+      <td>354.37</td>
+      <td>4.93</td>
+      <td>75.35</td>
+      <td>0</td>
+      <td>Active</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>CHEMBL204350</td>
+      <td>CC(C)(C)CCN1[C@H](C(=C(C1=O)C2=NS(=O)(=O)c3ccc...</td>
+      <td>IC50</td>
+      <td>=</td>
+      <td>1.7</td>
+      <td>nM</td>
+      <td>8.769551</td>
+      <td>Q8JXU8</td>
+      <td>Hepatitis C virus NS5B RNA-dependent RNA polym...</td>
+      <td>CHEMBL1146957</td>
+      <td>Scientific Literature</td>
+      <td>Inhibition of HCV NS5B RNA dependent RNA polym...</td>
+      <td>16455253.0</td>
+      <td>Bioorg. Med. Chem. Lett.</td>
+      <td>2006</td>
+      <td>16.0</td>
+      <td>8.0</td>
+      <td>2205.0</td>
+      <td>419.54</td>
+      <td>2.37</td>
+      <td>107.45</td>
+      <td>0</td>
+      <td>Active</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CMPD_CHEMBLID</th>
+      <th>CANONICAL_SMILES</th>
+      <th>STANDARD_TYPE</th>
+      <th>RELATION</th>
+      <th>STANDARD_VALUE</th>
+      <th>STANDARD_UNITS</th>
+      <th>pIC50</th>
+      <th>PROTEIN_ACCESSION</th>
+      <th>PREF_NAME</th>
+      <th>DOC_CHEMBLID</th>
+      <th>ASSAY_SRC_DESCRIPTION</th>
+      <th>DESCRIPTION</th>
+      <th>PUBMED_ID</th>
+      <th>JOURNAL</th>
+      <th>YEAR</th>
+      <th>VOLUME</th>
+      <th>ISSUE</th>
+      <th>FIRST_PAGE</th>
+      <th>MOLWEIGHT</th>
+      <th>ALOGP</th>
+      <th>PSA</th>
+      <th>NUM_RO5_VIOLATIONS</th>
+      <th>Activity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>576</th>
+      <td>CHEMBL175454</td>
+      <td>OC(=O)c1ccc2c(c1)nc(c3ccccn3)n2c4ccccc4</td>
+      <td>IC50</td>
+      <td>=</td>
+      <td>360000.0</td>
+      <td>nM</td>
+      <td>3.443697</td>
+      <td>Q8JXU8</td>
+      <td>Hepatitis C virus NS5B RNA-dependent RNA polym...</td>
+      <td>CHEMBL1149223</td>
+      <td>Scientific Literature</td>
+      <td>Inhibitory activity against NS5B polymerase of...</td>
+      <td>14684311.0</td>
+      <td>Bioorg. Med. Chem. Lett.</td>
+      <td>2004</td>
+      <td>14.0</td>
+      <td>1.0</td>
+      <td>119.0</td>
+      <td>315.33</td>
+      <td>3.96</td>
+      <td>68.01</td>
+      <td>0</td>
+      <td>Inactive</td>
+    </tr>
+    <tr>
+      <th>577</th>
+      <td>CHEMBL369640</td>
+      <td>CC(C)n1c(nc2cc(ccc12)C(=O)O)c3ccccn3</td>
+      <td>IC50</td>
+      <td>=</td>
+      <td>408000.0</td>
+      <td>nM</td>
+      <td>3.389340</td>
+      <td>Q8JXU8</td>
+      <td>Hepatitis C virus NS5B RNA-dependent RNA polym...</td>
+      <td>CHEMBL1149223</td>
+      <td>Scientific Literature</td>
+      <td>Inhibitory activity against NS5B polymerase of...</td>
+      <td>14684311.0</td>
+      <td>Bioorg. Med. Chem. Lett.</td>
+      <td>2004</td>
+      <td>14.0</td>
+      <td>1.0</td>
+      <td>119.0</td>
+      <td>281.31</td>
+      <td>3.11</td>
+      <td>68.01</td>
+      <td>0</td>
+      <td>Inactive</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Prepare-data-subset-as-input-to-PaDEL">
+<a class="anchor" href="#Prepare-data-subset-as-input-to-PaDEL" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Prepare data subset as input to PaDEL</strong><a class="anchor-link" href="#Prepare-data-subset-as-input-to-PaDEL"> </a>
+</h1>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span> <span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">'CANONICAL_SMILES'</span><span class="p">],</span><span class="n">df</span><span class="p">[</span><span class="s1">'CMPD_CHEMBLID'</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span> <span class="p">)</span>
+<span class="n">df2</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">'molecule.smi'</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">'</span><span class="se">\t</span><span class="s1">'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">df2</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CANONICAL_SMILES</th>
+      <th>CMPD_CHEMBLID</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>OC(=O)c1ccc2c(c1)nc(c3ccc(O)cc3F)n2C4CCCCC4</td>
+      <td>CHEMBL179256</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>CC(C)(C)CCN1[C@H](C(=C(C1=O)C2=NS(=O)(=O)c3ccc...</td>
+      <td>CHEMBL204350</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>OC(=O)c1ccc2c(c1)nc(c3ccc(O)cc3)n2C4CCCCC4</td>
+      <td>CHEMBL179257</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>OC(=O)c1ccc2c(C3CCCCC3)c([nH]c2c1)c4ccc(O)cc4</td>
+      <td>CHEMBL178784</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>CN(C)C(=O)Cn1c(c2ccc(OCc3ccccc3)cc2)c(C4CCCCC4...</td>
+      <td>CHEMBL369319</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>573</th>
+      <td>CCC(CC)n1c(nc2cc(ccc12)C(=O)O)c3ccccn3</td>
+      <td>CHEMBL175762</td>
+    </tr>
+    <tr>
+      <th>574</th>
+      <td>Cc1sc(cc1\C(=C\C(=O)C(=O)O)\O)c2ccccc2</td>
+      <td>CHEMBL197882</td>
+    </tr>
+    <tr>
+      <th>575</th>
+      <td>OC(=O)c1ccc2c(c1)ncn2C3CCCCC3</td>
+      <td>CHEMBL177122</td>
+    </tr>
+    <tr>
+      <th>576</th>
+      <td>OC(=O)c1ccc2c(c1)nc(c3ccccn3)n2c4ccccc4</td>
+      <td>CHEMBL175454</td>
+    </tr>
+    <tr>
+      <th>577</th>
+      <td>CC(C)n1c(nc2cc(ccc12)C(=O)O)c3ccccn3</td>
+      <td>CHEMBL369640</td>
+    </tr>
+  </tbody>
+</table>
+<p>578 rows × 2 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Calculate-descriptors">
+<a class="anchor" href="#Calculate-descriptors" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Calculate descriptors</strong><a class="anchor-link" href="#Calculate-descriptors"> </a>
+</h1>
+<p>There are 12 fingerprint types in PaDEL. To calculate all 12, make sure to make adjustments to the <strong><em>descriptortypes</em></strong> input argument to any of the ones in the <strong><em>fp</em></strong> dictionary variable as shown above, e.g. <em>SubstructureFingerprintCount.xml</em></p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">fp</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'AtomPairs2D': 'AtomPairs2DFingerprinter.xml',
+ 'AtomPairs2DCount': 'AtomPairs2DFingerprintCount.xml',
+ 'CDK': 'Fingerprinter.xml',
+ 'CDKextended': 'ExtendedFingerprinter.xml',
+ 'CDKgraphonly': 'GraphOnlyFingerprinter.xml',
+ 'EState': 'EStateFingerprinter.xml',
+ 'KlekotaRoth': 'KlekotaRothFingerprinter.xml',
+ 'KlekotaRothCount': 'KlekotaRothFingerprintCount.xml',
+ 'MACCS': 'MACCSFingerprinter.xml',
+ 'PubChem': 'PubchemFingerprinter.xml',
+ 'Substructure': 'SubstructureFingerprinter.xml',
+ 'SubstructureCount': 'SubstructureFingerprintCount.xml'}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">fp</span><span class="p">[</span><span class="s1">'PubChem'</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>'PubchemFingerprinter.xml'</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">padelpy</span> <span class="kn">import</span> <span class="n">padeldescriptor</span>
+
+<span class="n">fingerprint</span> <span class="o">=</span> <span class="s1">'Substructure'</span>
+
+<span class="n">fingerprint_output_file</span> <span class="o">=</span> <span class="s1">''</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fingerprint</span><span class="p">,</span><span class="s1">'.csv'</span><span class="p">])</span> <span class="c1">#Substructure.csv</span>
+<span class="n">fingerprint_descriptortypes</span> <span class="o">=</span> <span class="n">fp</span><span class="p">[</span><span class="n">fingerprint</span><span class="p">]</span>
+
+<span class="n">padeldescriptor</span><span class="p">(</span><span class="n">mol_dir</span><span class="o">=</span><span class="s1">'molecule.smi'</span><span class="p">,</span> 
+                <span class="n">d_file</span><span class="o">=</span><span class="n">fingerprint_output_file</span><span class="p">,</span> <span class="c1">#'Substructure.csv'</span>
+                <span class="c1">#descriptortypes='SubstructureFingerprint.xml', </span>
+                <span class="n">descriptortypes</span><span class="o">=</span> <span class="n">fingerprint_descriptortypes</span><span class="p">,</span>
+                <span class="n">detectaromaticity</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">standardizenitro</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">standardizetautomers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">removesalt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">fingerprints</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Display-calculated-fingerprints">
+<a class="anchor" href="#Display-calculated-fingerprints" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Display calculated fingerprints</strong><a class="anchor-link" href="#Display-calculated-fingerprints"> </a>
+</h1>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">descriptors</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fingerprint_output_file</span><span class="p">)</span>
+<span class="n">descriptors</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Name</th>
+      <th>SubFP1</th>
+      <th>SubFP2</th>
+      <th>SubFP3</th>
+      <th>SubFP4</th>
+      <th>SubFP5</th>
+      <th>SubFP6</th>
+      <th>SubFP7</th>
+      <th>SubFP8</th>
+      <th>SubFP9</th>
+      <th>SubFP10</th>
+      <th>SubFP11</th>
+      <th>SubFP12</th>
+      <th>SubFP13</th>
+      <th>SubFP14</th>
+      <th>SubFP15</th>
+      <th>SubFP16</th>
+      <th>SubFP17</th>
+      <th>SubFP18</th>
+      <th>SubFP19</th>
+      <th>SubFP20</th>
+      <th>SubFP21</th>
+      <th>SubFP22</th>
+      <th>SubFP23</th>
+      <th>SubFP24</th>
+      <th>SubFP25</th>
+      <th>SubFP26</th>
+      <th>SubFP27</th>
+      <th>SubFP28</th>
+      <th>SubFP29</th>
+      <th>SubFP30</th>
+      <th>SubFP31</th>
+      <th>SubFP32</th>
+      <th>SubFP33</th>
+      <th>SubFP34</th>
+      <th>SubFP35</th>
+      <th>SubFP36</th>
+      <th>SubFP37</th>
+      <th>SubFP38</th>
+      <th>SubFP39</th>
+      <th>...</th>
+      <th>SubFP268</th>
+      <th>SubFP269</th>
+      <th>SubFP270</th>
+      <th>SubFP271</th>
+      <th>SubFP272</th>
+      <th>SubFP273</th>
+      <th>SubFP274</th>
+      <th>SubFP275</th>
+      <th>SubFP276</th>
+      <th>SubFP277</th>
+      <th>SubFP278</th>
+      <th>SubFP279</th>
+      <th>SubFP280</th>
+      <th>SubFP281</th>
+      <th>SubFP282</th>
+      <th>SubFP283</th>
+      <th>SubFP284</th>
+      <th>SubFP285</th>
+      <th>SubFP286</th>
+      <th>SubFP287</th>
+      <th>SubFP288</th>
+      <th>SubFP289</th>
+      <th>SubFP290</th>
+      <th>SubFP291</th>
+      <th>SubFP292</th>
+      <th>SubFP293</th>
+      <th>SubFP294</th>
+      <th>SubFP295</th>
+      <th>SubFP296</th>
+      <th>SubFP297</th>
+      <th>SubFP298</th>
+      <th>SubFP299</th>
+      <th>SubFP300</th>
+      <th>SubFP301</th>
+      <th>SubFP302</th>
+      <th>SubFP303</th>
+      <th>SubFP304</th>
+      <th>SubFP305</th>
+      <th>SubFP306</th>
+      <th>SubFP307</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>CHEMBL204350</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>CHEMBL179256</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>CHEMBL179257</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>CHEMBL178784</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>CHEMBL369319</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>573</th>
+      <td>CHEMBL178067</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>574</th>
+      <td>CHEMBL197882</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>575</th>
+      <td>CHEMBL177122</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>576</th>
+      <td>CHEMBL175454</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>577</th>
+      <td>CHEMBL369640</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<p>578 rows × 308 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Build-a-Random-Forest-Model">
+<a class="anchor" href="#Build-a-Random-Forest-Model" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Build a Random Forest Model</strong><a class="anchor-link" href="#Build-a-Random-Forest-Model"> </a>
+</h1>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">descriptors</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">'Name'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'Activity'</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Remove-low-variance-features">
+<a class="anchor" href="#Remove-low-variance-features" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Remove low variance features</strong><a class="anchor-link" href="#Remove-low-variance-features"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">VarianceThreshold</span>
+
+<span class="k">def</span> <span class="nf">remove_low_variance</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+    <span class="n">selection</span> <span class="o">=</span> <span class="n">VarianceThreshold</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span>
+    <span class="n">selection</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">input_data</span><span class="p">[</span><span class="n">input_data</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">selection</span><span class="o">.</span><span class="n">get_support</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="kc">True</span><span class="p">)]]</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">remove_low_variance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">X</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>SubFP1</th>
+      <th>SubFP2</th>
+      <th>SubFP3</th>
+      <th>SubFP18</th>
+      <th>SubFP49</th>
+      <th>SubFP84</th>
+      <th>SubFP101</th>
+      <th>SubFP109</th>
+      <th>SubFP135</th>
+      <th>SubFP137</th>
+      <th>SubFP171</th>
+      <th>SubFP172</th>
+      <th>SubFP180</th>
+      <th>SubFP181</th>
+      <th>SubFP183</th>
+      <th>SubFP184</th>
+      <th>SubFP214</th>
+      <th>SubFP275</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>573</th>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>574</th>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>575</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>576</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>577</th>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<p>578 rows × 18 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Data-splitting">
+<a class="anchor" href="#Data-splitting" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Data splitting</strong><a class="anchor-link" href="#Data-splitting"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>((462, 18), (116, 18))</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Model-building">
+<a class="anchor" href="#Model-building" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Model building</strong><a class="anchor-link" href="#Model-building"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">matthews_corrcoef</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>RandomForestClassifier(bootstrap=True, ccp_alpha=0.0, class_weight=None,
+                       criterion='gini', max_depth=None, max_features='auto',
+                       max_leaf_nodes=None, max_samples=None,
+                       min_impurity_decrease=0.0, min_impurity_split=None,
+                       min_samples_leaf=1, min_samples_split=2,
+                       min_weight_fraction_leaf=0.0, n_estimators=500,
+                       n_jobs=None, oob_score=False, random_state=42, verbose=0,
+                       warm_start=False)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Apply-model-to-make-prediction">
+<a class="anchor" href="#Apply-model-to-make-prediction" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Apply model to make prediction</strong><a class="anchor-link" href="#Apply-model-to-make-prediction"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">y_train_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">y_test_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Calculate-model-performance-metrics">
+<a class="anchor" href="#Calculate-model-performance-metrics" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Calculate model performance metrics</strong><a class="anchor-link" href="#Calculate-model-performance-metrics"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">mcc_train</span> <span class="o">=</span> <span class="n">matthews_corrcoef</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="n">y_train_pred</span><span class="p">)</span>
+<span class="n">mcc_train</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0.8328828266116973</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">mcc_test</span> <span class="o">=</span> <span class="n">matthews_corrcoef</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_test_pred</span><span class="p">)</span>
+<span class="n">mcc_test</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0.5219385334290642</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Cross-validation">
+<a class="anchor" href="#Cross-validation" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Cross-validation</strong><a class="anchor-link" href="#Cross-validation"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">cross_val_score</span>
+
+<span class="n">rf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">rf</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">cv_scores</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([0.86021505, 0.86021505, 0.88043478, 0.83695652, 0.79347826])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">mcc_cv</span> <span class="o">=</span> <span class="n">cv_scores</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">mcc_cv</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0.8462599345488545</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-python"><pre><span></span><span class="n">model_name</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="s1">'Random forest'</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s1">'Name'</span><span class="p">)</span>
+<span class="n">mcc_train_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">mcc_train</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'MCC_train'</span><span class="p">)</span>
+<span class="n">mcc_cv_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">mcc_cv</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'MCC_cv'</span><span class="p">)</span>
+<span class="n">mcc_test_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">mcc_test</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'MCC_test'</span><span class="p">)</span>
+
+<span class="n">performance_metrics</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">model_name</span><span class="p">,</span> <span class="n">mcc_train_series</span><span class="p">,</span> <span class="n">mcc_cv_series</span><span class="p">,</span> <span class="n">mcc_test_series</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">performance_metrics</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Name</th>
+      <th>MCC_train</th>
+      <th>MCC_cv</th>
+      <th>MCC_test</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Random forest</td>
+      <td>0.832883</td>
+      <td>0.84626</td>
+      <td>0.521939</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="dataprofessor/ds"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/ds/bioinformatics/cheminformatics/padelpy/scikit-learn/2021/07/05/_07_06_padelpy.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/ds/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/ds/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/ds/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>Data science portfolio website.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/dataprofessor" title="dataprofessor"><svg class="svg-icon grey"><use xlink:href="/ds/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/thedataprof" title="thedataprof"><svg class="svg-icon grey"><use xlink:href="/ds/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
