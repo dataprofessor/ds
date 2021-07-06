@@ -41,6 +41,7 @@ minima:
   social_links:
     twitter: thedataprof
     github: dataprofessor
+    youtube_channel_name: dataprofessor
 
 # Set this to true to get LaTeX math equation support
 use_math: 
